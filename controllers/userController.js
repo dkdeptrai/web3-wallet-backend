@@ -1,10 +1,11 @@
-const { sequelize, DataTypes } = require("../config/database"); // Adjust path as necessary
-const User = require("../models/User")(sequelize, DataTypes); // Call the function to get the model
+const { sequelize, DataTypes } = require("../config/database");
+const User = require("../models/User")(sequelize, DataTypes);
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
 const { where } = require("sequelize");
+const cloudinaryService = require("../services/cloudinaryService");
 
 exports.signup = async (req, res) => {
   try {
@@ -65,7 +66,7 @@ exports.addPublicKey = async (req, res) => {
   try {
     const user = await User.findOne({
       where: {
-        id: req.id,
+        id: req.userId,
       },
     });
 
@@ -76,7 +77,7 @@ exports.addPublicKey = async (req, res) => {
     const existingPublicKey = await PublicAddress.findOne({
       where: {
         publicKey: req.body.publicKey,
-        userId: req.id,
+        userId: req.userId,
       },
     });
 
@@ -88,10 +89,40 @@ exports.addPublicKey = async (req, res) => {
 
     await PublicAddress.create({
       publicKey: req.body.publicKey,
-      userId: req.id,
+      userId: req.userId,
     });
 
     res.status(201).send({ message: "Public key added successfully!" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send({ message: err.message });
+  }
+};
+
+exports.addAvatar = async (req, res) => {
+  try {
+    console.log(
+      `[${new Date().toISOString()}] ${req.method} ${req.url} ${req.hostname}`
+    );
+    console.log(
+      `[${new Date().toISOString()}] ${req.method} ${req.url} ${req.hostname}`
+    );
+    console.log("Headers:", req.headers);
+    console.log("Query:", req.query);
+    console.log("Body:", req.body);
+    if (!req.file) {
+      return res.status(400).send({ message: "Please upload an image!" });
+    }
+    console.log(req.file);
+    const result = await cloudinaryService.uploadImage(req.file.path);
+    const user = await User.findOne({
+      where: {
+        id: req.body.userId,
+      },
+    });
+    user.avatarUrl = result;
+    await user.save();
+    res.json({ avatarUrl: result });
   } catch (err) {
     console.error(err.message);
     res.status(500).send({ message: err.message });

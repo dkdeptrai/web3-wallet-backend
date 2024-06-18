@@ -54,6 +54,10 @@ module.exports = (sequelize) => {
         },
       },
     },
+    avatarUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   });
 
   return User;
