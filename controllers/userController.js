@@ -1,11 +1,15 @@
 const { sequelize, DataTypes } = require("../config/database");
 const User = require("../models/User")(sequelize, DataTypes);
+const PublicAddress = require("../models/PublicAddress")(sequelize, DataTypes);
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
 const { where } = require("sequelize");
 const cloudinaryService = require("../services/cloudinaryService");
+const { id } = require("ethers");
+
+const verifyToken = require("../middlewares/authMiddleware").verifyToken;
 
 exports.signup = async (req, res) => {
   try {
@@ -62,37 +66,87 @@ exports.signin = async (req, res) => {
   }
 };
 
-exports.addPublicKey = async (req, res) => {
+exports.addPublicAddress = async (req, res) => {
   try {
-    const user = await User.findOne({
-      where: {
-        id: req.userId,
-      },
-    });
+    verifyToken(req, res, async () => {
+      const user = await User.findOne({
+        where: {
+          id: req.userId,
+        },
+      });
 
-    if (!user) {
-      return res.status(404).send({ message: "User Not found." });
-    }
+      if (!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
 
-    const existingPublicKey = await PublicAddress.findOne({
-      where: {
-        publicKey: req.body.publicKey,
+      const existingPublicAddress = await PublicAddress.findOne({
+        where: {
+          publicAddress: req.body.publicAddress,
+          userId: req.userId,
+        },
+      });
+
+      if (existingPublicAddress) {
+        return res
+          .status(400)
+          .send({ message: "Public key for this user already exists!" });
+      }
+
+      await PublicAddress.create({
+        publicAddress: req.body.publicAddress,
         userId: req.userId,
-      },
+      });
+
+      res.status(201).send({ message: "Public key added successfully!" });
     });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send({ message: err.message });
+  }
+};
 
-    if (existingPublicKey) {
-      return res
-        .status(400)
-        .send({ message: "Public key for this user already exists!" });
-    }
+exports.getPublicAddress = async (req, res) => {
+  try {
+    verifyToken(req, res, async () => {
+      const userId = req.query.userId;
+      const user = await User.findOne({
+        where: {
+          id: userId,
+        },
+      });
 
-    await PublicAddress.create({
-      publicKey: req.body.publicKey,
-      userId: req.userId,
+      if (!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
+
+      const publicAddress = await PublicAddress.findAll({
+        where: {
+          userId: userId,
+        },
+      });
+
+      res.status(200).send(publicAddress);
     });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send({ message: err.message });
+  }
+};
 
-    res.status(201).send({ message: "Public key added successfully!" });
+exports.deletePublicAddress = async (req, res) => {
+  try {
+    verifyToken(req, res, async () => {
+      const publicAddress = await PublicAddress.findOne({
+        where: {
+          id: req.query.publicAddressId,
+        },
+      });
+      if (!publicAddress) {
+        return res.status(404).send({ message: "Public Address Not found." });
+      }
+      await publicAddress.destroy();
+      res.status(200).send({ message: "Public Address deleted successfully!" });
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send({ message: err.message });
