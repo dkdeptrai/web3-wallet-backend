@@ -10,11 +10,11 @@ io.use((socket, next) => {
 });
 
 io.on("connection", (socket) => {
-  socket.on("startPolling", () => {
-    socketController.startPolling(socket);
+  socket.on("startCoinsPricePolling", () => {
+    socketController.startCoinsPricePolling(socket);
   });
-  socket.on("stopPolling", () => {
-    socketController.stopPolling(socket);
+  socket.on("stopCoinsPricePolling", () => {
+    socketController.stopCoinsPricePolling(socket);
   });
 });
 

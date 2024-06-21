@@ -5,27 +5,27 @@ const LIVE_COIN_WATCH_API = process.env.LIVE_COIN_WATCH_API;
 
 let intervals = {};
 
-exports.startPolling = (socket) => {
+exports.startCoinsPricePolling = (socket) => {
   console.log("Polling started");
 
   const pollPrices = async (retryCount = 3) => {
     try {
       console.log("start polling");
-      // const url = "https://api.livecoinwatch.com/coins/list";
-      // const data = {
-      //   currency: "USD",
-      //   sort: "rank",
-      //   order: "ascending",
-      //   offset: 0,
-      //   limit: 10,
-      //   meta: true,
-      // };
-      // const headers = {
-      //   "content-type": "application/json",
-      //   "x-api-key": LIVE_COIN_WATCH_API,
-      // };
-      // const response = await axios.post(url, data, { headers });
-      // socket.emit("newPrice", response.data);
+      const url = "https://api.livecoinwatch.com/coins/list";
+      const data = {
+        currency: "USD",
+        sort: "rank",
+        order: "ascending",
+        offset: 0,
+        limit: 10,
+        meta: true,
+      };
+      const headers = {
+        "content-type": "application/json",
+        "x-api-key": LIVE_COIN_WATCH_API,
+      };
+      const response = await axios.post(url, data, { headers });
+      socket.emit("newPrice", response.data);
       socket.emit("hello", { message: "Hello from the server" });
     } catch (err) {
       console.error("Error polling API:", err.message);
@@ -44,7 +44,7 @@ exports.startPolling = (socket) => {
     }
   };
 
-  const intervalId = setInterval(pollPrices, 1000);
+  const intervalId = setInterval(pollPrices, 10000);
   intervals[socket.id] = intervalId;
 
   socket.on("disconnect", () => {
@@ -54,7 +54,7 @@ exports.startPolling = (socket) => {
   });
 };
 
-exports.stopPolling = (socket) => {
+exports.stopCoinsPricePolling = (socket) => {
   console.log("Polling stopped");
   clearInterval(intervals[socket.id]);
   delete intervals[socket.id];
