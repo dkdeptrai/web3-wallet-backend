@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@alch/alchemy-web3": "^0.1.18",
-    "axios": "^1.6.8",
+    "axios": "^1.7.2",
+    "axios-retry": "^4.4.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.2.0",
     "dotenv": "^16.4.5",
@@ -23,6 +24,7 @@
     "mysql2": "^3.10.1",
     "sequelize": "^6.37.3",
     "sequelize-cli": "^6.6.2",
+    "socket.io": "^4.7.5",
     "web3": "^4.8.0",
     "ws": "^8.17.0"
   }

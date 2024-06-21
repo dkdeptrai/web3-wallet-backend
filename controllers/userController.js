@@ -87,9 +87,9 @@ exports.addPublicAddress = async (req, res) => {
       });
 
       if (existingPublicAddress) {
-        return res
-          .status(400)
-          .send({ message: "Public key for this user already exists!" });
+        return res.status(400).send({
+          message: "Identical public address for this user already exists!",
+        });
       }
 
       await PublicAddress.create({
@@ -97,7 +97,7 @@ exports.addPublicAddress = async (req, res) => {
         userId: req.userId,
       });
 
-      res.status(201).send({ message: "Public key added successfully!" });
+      res.status(201).send({ message: "Public address added successfully!" });
     });
   } catch (err) {
     console.error(err.message);
@@ -155,15 +155,6 @@ exports.deletePublicAddress = async (req, res) => {
 
 exports.addAvatar = async (req, res) => {
   try {
-    console.log(
-      `[${new Date().toISOString()}] ${req.method} ${req.url} ${req.hostname}`
-    );
-    console.log(
-      `[${new Date().toISOString()}] ${req.method} ${req.url} ${req.hostname}`
-    );
-    console.log("Headers:", req.headers);
-    console.log("Query:", req.query);
-    console.log("Body:", req.body);
     if (!req.file) {
       return res.status(400).send({ message: "Please upload an image!" });
     }
