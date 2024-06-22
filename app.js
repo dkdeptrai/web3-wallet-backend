@@ -1,13 +1,20 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const http = require("http");
+const https = require("https");
+const fs = require("fs");
 const { sequelize } = require("./config/database");
 const { initSocket } = require("./config/socket.config");
 
 dotenv.config();
 
+const options = {
+  key: fs.readFileSync("server.key"),
+  cert: fs.readFileSync("server.cert"),
+};
+
 const app = express();
-const server = http.createServer(app);
+const server = https.createServer(options, app);
 
 initSocket(server);
 

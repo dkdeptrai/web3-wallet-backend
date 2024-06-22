@@ -26,7 +26,7 @@ exports.startCoinsPricePolling = (socket) => {
       };
       const response = await axios.post(url, data, { headers });
       socket.emit("newPrice", response.data);
-      socket.emit("hello", { message: "Hello from the server" });
+      // socket.emit("hello", { message: "Hello from the server" });
     } catch (err) {
       console.error("Error polling API:", err.message);
       socket.emit("error", err.message);
@@ -58,4 +58,16 @@ exports.stopCoinsPricePolling = (socket) => {
   console.log("Polling stopped");
   clearInterval(intervals[socket.id]);
   delete intervals[socket.id];
+};
+
+exports.addWebhookAddress = async (newAddress) => {
+  const body = {
+    webhook_id: "wh_0oftcre8sshlxj27",
+    address_to_add: [newAddress],
+    addresses_to_remove: [],
+  };
+
+  try {
+    const response = await axios.post("http");
+  } catch (err) {}
 };

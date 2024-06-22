@@ -5,9 +5,7 @@ const PublicAddress = require("../models/PublicAddress")(sequelize, DataTypes);
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
-const { where } = require("sequelize");
 const cloudinaryService = require("../services/cloudinaryService");
-const { id } = require("ethers");
 const { body, query, validationResult } = require("express-validator");
 
 const verifyToken = require("../middlewares/authMiddleware").verifyToken;

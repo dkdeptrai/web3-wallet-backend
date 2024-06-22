@@ -16,6 +16,9 @@ io.on("connection", (socket) => {
   socket.on("stopCoinsPricePolling", () => {
     socketController.stopCoinsPricePolling(socket);
   });
+  socket.on("register address", (msg) => {
+    socketController.addAddress(msg);
+  });
 });
 
 module.exports = router;
