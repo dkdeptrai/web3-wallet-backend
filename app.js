@@ -9,8 +9,8 @@ const { initSocket } = require("./config/socket.config");
 dotenv.config();
 
 const options = {
-  key: fs.readFileSync("server.key"),
-  cert: fs.readFileSync("server.cert"),
+  key: fs.readFileSync(process.env.SSL_KEY_PATH),
+  cert: fs.readFileSync(process.env.SSL_CERT_PATH),
 };
 
 const app = express();
