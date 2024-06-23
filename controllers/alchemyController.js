@@ -80,6 +80,91 @@ exports.sendRawTransaction = async (req, res) => {
   }
 };
 
+exports.getTransactionHistory = async (req, res) => {
+  try {
+    const address = req.body.address;
+    const contractAddress = req.body.contractAddress;
+    const page = req.body.page || 1;
+    const pageSize = req.body.pageSize || 10;
+    const offset = (page - 1) * pageSize;
+
+    const response_from = await axios.post(ALCHEMY_API_URL, {
+      id: 1,
+      jsonrpc: "2.0",
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromBlock: "0x0",
+          toBlock: "latest",
+          fromAddress: address,
+          withMetadata: true,
+          excludeZeroValue: false,
+          contractAddresses: contractAddress,
+          category: [
+            "external",
+            "internal",
+            "erc20",
+            "erc721",
+            "erc1155",
+            "specialnft",
+          ],
+        },
+      ],
+    });
+
+    const response_to = await axios.post(ALCHEMY_API_URL, {
+      id: 1,
+      jsonrpc: "2.0",
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromBlock: "0x0",
+          toBlock: "latest",
+          toAddress: address,
+          withMetadata: true,
+          excludeZeroValue: false,
+          contractAddresses: contractAddress,
+          category: [
+            "external",
+            "internal",
+            "erc20",
+            "erc721",
+            "erc1155",
+            "specialnft",
+          ],
+        },
+      ],
+    });
+    const outgoingTransactions = response_from.data.result.transfers;
+    const incomingTransactions = response_to.data.result.transfers;
+
+    let allTransactions = [...outgoingTransactions, ...incomingTransactions];
+    allTransactions.sort(
+      (a, b) =>
+        new Date(b.metadata.blockTimestamp) -
+        new Date(a.metadata.blockTimestamp)
+    );
+
+    const totalTransactions = allTransactions.length;
+    const totalPages = Math.ceil(totalTransactions / pageSize);
+    const paginatedTransactions = allTransactions.slice(
+      offset,
+      offset + pageSize
+    );
+
+    res.status(200).send({
+      transactions: paginatedTransactions,
+      page,
+      pageSize,
+      totalPages,
+    });
+  } catch (error) {
+    console.error("Error getting transaction history:", error);
+    res.status(500).send({ message: error.message });
+    throw error;
+  }
+};
+
 function monitorTransactionStatus(transactionHash) {
   const emitTransactionStatus = (status) => {
     io.emit(transactionHash, status);
