@@ -1,20 +1,24 @@
-// testAxiosRetry.js
-const axios = require("axios");
-const axiosRetry = require("axios-retry");
+const selfsigned = require("selfsigned");
+const fs = require("fs");
 
-axiosRetry(axios, {
-  retries: 3,
-  retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: (error) => {
-    return error.code === "ECONNABORTED" || error.response?.status === 420;
-  },
-});
+// Define attributes for the certificate
+const attrs = [{ name: "192.168.50.177", value: "192.168.50.177", type: "IP" }];
 
-axios
-  .get("https://api.coindesk.com/v1/bpi/currentprice.json")
-  .then((response) => {
-    console.log("Response data:", response.data);
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-  });
+try {
+  // Generate the certificate
+  const pems = selfsigned.generate(attrs, { days: 365 });
+
+  // Log pems to inspect
+  console.log("Generated pems:", pems);
+
+  // Save the certificate and private key to files
+  if (pems.cert) {
+    fs.writeFileSync("./cert.pem", pems.cert);
+    fs.writeFileSync("./key.pem", pems.private);
+    console.log("Certificate and private key saved.");
+  } else {
+    throw new Error("Generated certificate is undefined.");
+  }
+} catch (err) {
+  console.error("Error generating or saving self-signed certificate:", err);
+}

@@ -44,7 +44,7 @@ exports.startCoinsPricePolling = (socket) => {
     }
   };
 
-  const intervalId = setInterval(pollPrices, 10000);
+  const intervalId = setInterval(pollPrices, 5000);
   intervals[socket.id] = intervalId;
 
   socket.on("disconnect", () => {

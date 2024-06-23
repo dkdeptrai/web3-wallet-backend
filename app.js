@@ -15,6 +15,7 @@ const options = {
 
 const app = express();
 const server = https.createServer(options, app);
+// const server = http.createServer(app);
 
 initSocket(server);
 
@@ -25,6 +26,9 @@ const alchemyRoutes = require("./routes/alchemyRoutes");
 const socketRoutes = require("./routes/socketRoutes");
 
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
 app.use("/api/users", userRoutes);
 app.use("/api/web3-helper", alchemyRoutes);
 app.use("/socket.io", socketRoutes);
