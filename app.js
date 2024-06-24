@@ -5,6 +5,7 @@ const https = require("https");
 const fs = require("fs");
 const { sequelize } = require("./config/database");
 const { initSocket } = require("./config/socket.config");
+const fetchAndSaveNews = require("./helpers/fetchNews");
 
 dotenv.config();
 
@@ -20,10 +21,13 @@ const server = https.createServer(options, app);
 initSocket(server);
 
 const Port = process.env.PORT || 3000;
+fetchAndSaveNews();
 
 const userRoutes = require("./routes/userRoutes");
 const alchemyRoutes = require("./routes/alchemyRoutes");
 const socketRoutes = require("./routes/socketRoutes");
+const contractAbiRoutes = require("./routes/contractAbiRoutes");
+const newsRoutes = require("./routes/newsRoutes");
 
 app.use(express.json());
 app.get("/", (req, res) => {
@@ -31,7 +35,9 @@ app.get("/", (req, res) => {
 });
 app.use("/api/users", userRoutes);
 app.use("/api/web3-helper", alchemyRoutes);
-app.use("/socket.io", socketRoutes);
+app.use("/api/socket.io", socketRoutes);
+app.use("/api/contract-abi", contractAbiRoutes);
+app.use("/api/news", newsRoutes);
 
 sequelize
   .sync()

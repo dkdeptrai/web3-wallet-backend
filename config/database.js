@@ -14,7 +14,8 @@ const sequelize = new Sequelize("wallet", "root", "root", {
 // Import models
 const User = require("../models/User")(sequelize);
 const PublicAddress = require("../models/PublicAddress")(sequelize);
+const Article = require("../models/Article")(sequelize);
 
 require("../models/associations")({ User, PublicAddress });
 
-module.exports = { sequelize, User, PublicAddress };
+module.exports = { sequelize, User, PublicAddress, Article };
