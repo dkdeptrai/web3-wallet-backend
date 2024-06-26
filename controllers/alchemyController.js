@@ -57,6 +57,11 @@ exports.getEthBalance = async (req, res) => {
 
 exports.sendRawTransaction = async (req, res) => {
   try {
+    const info = {
+      recipientAddress: req.body.recipientAddress,
+      value: req.body.value,
+      symbol: req.body.symbol,
+    };
     const rawTransaction = req.body.transactionHash;
     if (!rawTransaction || typeof rawTransaction !== "string") {
       return res.status(400).send({ message: "Invalid transaction hash" });
@@ -72,7 +77,7 @@ exports.sendRawTransaction = async (req, res) => {
     res.status(200).send({
       transactionHash: sendTx,
     });
-    monitorTransactionStatus(sendTx);
+    monitorTransactionStatus(sendTx, info);
   } catch (error) {
     console.error("Error sending raw transaction:", error);
     res.status(500).send({ message: error.message });
@@ -135,6 +140,14 @@ exports.getTransactionHistory = async (req, res) => {
         },
       ],
     });
+    if (
+      !response_from.data.result ||
+      !response_to.data.result ||
+      !response_from.data.result.transfers ||
+      !response_to.data.result.transfers
+    ) {
+      return res.status(404).send({ message: "No transactions found" });
+    }
     const outgoingTransactions = response_from.data.result.transfers;
     const incomingTransactions = response_to.data.result.transfers;
 
@@ -165,9 +178,13 @@ exports.getTransactionHistory = async (req, res) => {
   }
 };
 
-function monitorTransactionStatus(transactionHash) {
+function monitorTransactionStatus(transactionHash, info) {
   const emitTransactionStatus = (status) => {
-    io.emit(transactionHash, status);
+    const txInfo = {
+      status: status,
+      ...info,
+    };
+    io.emit(transactionHash, txInfo);
   };
 
   const interval = setInterval(async () => {

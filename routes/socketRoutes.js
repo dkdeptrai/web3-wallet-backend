@@ -21,4 +21,9 @@ io.on("connection", (socket) => {
   });
 });
 
+io.on("disconnect", (socket) => {
+  console.log("Client disconnected");
+  socketController.stopCoinsPricePolling;
+});
+
 module.exports = router;

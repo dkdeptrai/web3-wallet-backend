@@ -59,15 +59,3 @@ exports.stopCoinsPricePolling = (socket) => {
   clearInterval(intervals[socket.id]);
   delete intervals[socket.id];
 };
-
-exports.addWebhookAddress = async (newAddress) => {
-  const body = {
-    webhook_id: "wh_0oftcre8sshlxj27",
-    address_to_add: [newAddress],
-    addresses_to_remove: [],
-  };
-
-  try {
-    const response = await axios.post("http");
-  } catch (err) {}
-};
