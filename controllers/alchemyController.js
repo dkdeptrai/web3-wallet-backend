@@ -26,6 +26,9 @@ exports.makeJsonRpcCall = async (req, res) => {
       params,
       id: 1,
     });
+    if (response.data.error) {
+      return res.status(400).send({ message: response.data.error.message });
+    }
     res.status(200).send({
       result: response.data.result,
     });
@@ -45,6 +48,9 @@ exports.getEthBalance = async (req, res) => {
       params: [address, "latest"],
       id: 1,
     });
+    if (response.data.error) {
+      return res.status(400).send({ message: response.data.error.message });
+    }
     res.status(200).send({
       balance: response.data.result,
     });
@@ -62,25 +68,33 @@ exports.sendRawTransaction = async (req, res) => {
       value: req.body.value,
       symbol: req.body.symbol,
     };
+
     const rawTransaction = req.body.transactionHash;
     if (!rawTransaction || typeof rawTransaction !== "string") {
       return res.status(400).send({ message: "Invalid transaction hash" });
     }
+
     console.log("rawTransaction", rawTransaction);
+
     const response = await axios.post(ALCHEMY_API_URL, {
       jsonrpc: "2.0",
       method: "eth_sendRawTransaction",
       params: [rawTransaction],
       id: 1,
     });
+    if (response.data.error) {
+      return res.status(400).send({ message: response.data.error.message });
+    }
+
     const sendTx = response.data.result;
-    res.status(200).send({
-      transactionHash: sendTx,
-    });
+    res.status(200).send({ transactionHash: sendTx });
+
     monitorTransactionStatus(sendTx, info);
   } catch (error) {
-    console.error("Error sending raw transaction:", error);
-    res.status(500).send({ message: error.message });
+    console.error("Error sending raw transaction:", error.message);
+    res
+      .status(500)
+      .send({ message: "Error sending raw transaction", error: error.message });
     throw error;
   }
 };
@@ -140,6 +154,12 @@ exports.getTransactionHistory = async (req, res) => {
         },
       ],
     });
+    if (response_from.data.error || response_to.data.error) {
+      return res.status(400).send({
+        message:
+          response_from.data.error.message + response_to.data.error.message,
+      });
+    }
     if (
       !response_from.data.result ||
       !response_to.data.result ||
