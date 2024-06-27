@@ -10,5 +10,7 @@ router.get("/public-address", userController.getPublicAddress);
 router.delete("/public-address", userController.deletePublicAddress);
 
 router.post("/upload-avatar", upload.single("image"), userController.addAvatar);
+router.post("/profile", upload.single("image"), userController.updateProfile);
+router.get("/profile", userController.getProfile);
 
 module.exports = router;
