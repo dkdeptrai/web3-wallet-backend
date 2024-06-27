@@ -7,13 +7,14 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
 const cloudinaryService = require("../services/cloudinaryService");
 const { body, query, validationResult } = require("express-validator");
+const { where } = require("sequelize");
 
 const verifyToken = require("../middlewares/authMiddleware").verifyToken;
 
 exports.signupValidators = [
-  body("username").exists().withMessage("Username is required"),
-  body("email").exists().withMessage("Email is required"),
-  body("password").exists().withMessage("Password is required"),
+  // body("username").exists().withMessage("Username is required"),
+  // body("email").exists().withMessage("Email is required"),
+  // body("password").exists().withMessage("Password is required"),
 ];
 exports.signup = [
   ...exports.signupValidators,
@@ -23,11 +24,10 @@ exports.signup = [
       return res.status(400).json({ errors: errors.array() });
     }
     try {
-      const hashedPassword = bcrypt.hashSync(req.body.password, 8);
+      // const hashedPassword = bcrypt.hashSync(req.body.password, 8);
       const user = await User.create({
-        username: req.body.username,
-        email: req.body.email,
-        password: hashedPassword,
+        publicAddress: req.body.publicAddress,
+        username: req.body.publicAddress,
       });
       res.status(201).send({ message: "User was registered successfully!" });
     } catch (err) {
@@ -38,8 +38,7 @@ exports.signup = [
 ];
 
 exports.signinValidators = [
-  body("email").exists().withMessage("Email is required"),
-  body("password").exists().withMessage("Password is required"),
+  body("publicAddress").exists().withMessage("Public Address is required"),
 ];
 exports.signin = [
   ...exports.signinValidators,
@@ -51,7 +50,7 @@ exports.signin = [
     try {
       const user = await User.findOne({
         where: {
-          email: req.body.email,
+          publicAddress: req.body.publicAddress,
         },
       });
 
@@ -59,17 +58,17 @@ exports.signin = [
         return res.status(404).send({ message: "User Not found." });
       }
 
-      const passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        user.password
-      );
+      // const passwordIsValid = bcrypt.compareSync(
+      //   req.body.password,
+      //   user.password
+      // );
 
-      if (!passwordIsValid) {
-        return res.status(401).send({
-          accessToken: null,
-          message: "Invalid Password!",
-        });
-      }
+      // if (!passwordIsValid) {
+      //   return res.status(401).send({
+      //     accessToken: null,
+      //     message: "Invalid Password!",
+      //   });
+      // }
 
       const token = jwt.sign({ id: user.id }, config.secret, {
         expiresIn: config.expiresIn,
@@ -78,7 +77,6 @@ exports.signin = [
       res.status(200).send({
         id: user.id,
         username: user.username,
-        email: user.email,
         accessToken: token,
       });
     } catch (err) {
@@ -261,3 +259,67 @@ exports.addAvatar = [
     }
   },
 ];
+
+exports.updateProfile = async (req, res) => {
+  try {
+    verifyToken(req, res, async () => {
+      const user = await User.findOne({
+        where: {
+          id: req.body.userId,
+        },
+      });
+      if (!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
+      user.username = req.body.username;
+      const result = await cloudinaryService.uploadImage(req.file.path);
+      user.avatarUrl = result;
+      user.save();
+      res.json({
+        userId: req.body.userId,
+        username: req.body.username,
+        avatarUrl: result,
+      });
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).send({ message: error.message });
+    throw error;
+  }
+};
+
+exports.getProfile = async (req, res) => {
+  try {
+    verifyToken(req, res, async () => {
+      const user = await User.findOne({
+        where: {
+          id: req.query.userId,
+        },
+      });
+      if (!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
+      const userInfo = {
+        userId: user.id,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        publicAddress: user.publicAddress,
+      };
+      res.status(200).send(user);
+    });
+  } catch (error) {
+    console.error("Error getting profile:", error);
+    res.status(500).send({ message: error.message });
+    throw error;
+  }
+};
+
+exports.addContacts = async (req, res) => {
+  try {
+    verifyToken(req, res, async () => {});
+  } catch (error) {
+    console.error("Error adding contacts:", error);
+    res.status(500).send({ message: error.message });
+    throw error;
+  }
+};
