@@ -321,7 +321,7 @@ exports.addContact = async (req, res) => {
       const contact = await Contact.create({
         name: req.body.name,
         publicAddress: req.body.publicAddress,
-        userId: req.userId,
+        userId: req.body.userId,
       });
       res.status(201).send({ message: "Contact added successfully!" });
     });
@@ -339,6 +339,7 @@ exports.getContacts = async (req, res) => {
         where: {
           userId: req.query.userId,
         },
+        order: [["name", "ASC"]],
       });
       res.status(200).send(contacts);
     });
