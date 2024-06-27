@@ -273,13 +273,12 @@ exports.updateProfile = async (req, res) => {
         return res.status(404).send({ message: "User Not found." });
       }
       user.username = req.body.username;
-      const result = await cloudinaryService.uploadImage(req.file.path);
-      user.avatarUrl = result;
+      // const result = await cloudinaryService.uploadImage(req.file.path);
+      // user.avatarUrl = result;
       user.save();
       res.json({
         userId: req.body.userId,
         username: req.body.username,
-        avatarUrl: result,
       });
     });
   } catch (error) {
