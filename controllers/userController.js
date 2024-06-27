@@ -1,6 +1,7 @@
 const { sequelize, DataTypes } = require("../config/database");
 const User = require("../models/User")(sequelize, DataTypes);
 const PublicAddress = require("../models/PublicAddress")(sequelize, DataTypes);
+const Contact = require("../models/Contact")(sequelize, DataTypes);
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -314,11 +315,56 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-exports.addContacts = async (req, res) => {
+exports.addContact = async (req, res) => {
   try {
-    verifyToken(req, res, async () => {});
+    verifyToken(req, res, async () => {
+      const contact = await Contact.create({
+        name: req.body.name,
+        publicAddress: req.body.publicAddress,
+        userId: req.userId,
+      });
+      res.status(201).send({ message: "Contact added successfully!" });
+    });
   } catch (error) {
     console.error("Error adding contacts:", error);
+    res.status(500).send({ message: error.message });
+    throw error;
+  }
+};
+
+exports.getContacts = async (req, res) => {
+  try {
+    verifyToken(req, res, async () => {
+      const contacts = await Contact.findAll({
+        where: {
+          userId: req.query.userId,
+        },
+      });
+      res.status(200).send(contacts);
+    });
+  } catch (error) {
+    console.error("Error getting contacts:", error);
+    res.status(500).send({ message: error.message });
+    throw error;
+  }
+};
+
+exports.deleteContact = async (req, res) => {
+  try {
+    verifyToken(req, res, async () => {
+      const contact = await Contact.findOne({
+        where: {
+          id: req.query.contactId,
+        },
+      });
+      if (!contact) {
+        return res.status(404).send({ message: "Contact Not found." });
+      }
+      await contact.destroy();
+      res.status(200).send({ message: "Contact deleted successfully!" });
+    });
+  } catch (error) {
+    console.error("Error deleting contact:", error);
     res.status(500).send({ message: error.message });
     throw error;
   }

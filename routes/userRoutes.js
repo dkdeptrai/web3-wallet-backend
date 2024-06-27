@@ -12,5 +12,7 @@ router.delete("/public-address", userController.deletePublicAddress);
 router.post("/upload-avatar", upload.single("image"), userController.addAvatar);
 router.post("/profile", upload.single("image"), userController.updateProfile);
 router.get("/profile", userController.getProfile);
+router.post("/contacts", userController.addContact);
+router.get("/contacts", userController.getContacts);
 
 module.exports = router;
