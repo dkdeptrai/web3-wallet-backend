@@ -70,8 +70,14 @@ exports.sendRawTransaction = async (req, res) => {
     };
 
     const rawTransaction = req.body.transactionHash;
-    if (!rawTransaction || typeof rawTransaction !== "string") {
-      return res.status(400).send({ message: "Invalid transaction hash" });
+    if (!rawTransaction) {
+      return res.status(400).send({ message: "transactionHash is required" });
+    }
+    if (typeof rawTransaction !== "string") {
+      return res.status(400).send({
+        message:
+          "transactionHash type: " + typeof rawTransaction + "is not String",
+      });
     }
 
     console.log("rawTransaction", rawTransaction);
