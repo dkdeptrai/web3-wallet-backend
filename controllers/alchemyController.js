@@ -68,7 +68,7 @@ exports.sendRawTransaction = async (req, res) => {
       value: req.body.value,
       symbol: req.body.symbol,
     };
-    const rawTransaction = String(req.body.transactionHash);
+    const rawTransaction = req.body.transactionHash;
 
     if (!rawTransaction) {
       return res.status(400).send({ message: "transactionHash is required" });
